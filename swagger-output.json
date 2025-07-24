@@ -1,0 +1,556 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API per il progetto PWM - gestione utenti, album, mercato, scambi e preferiti",
+    "version": "1.0.0",
+    "title": "PWM API"
+  },
+  "host": "localhost:3002",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Utenti",
+      "description": "Gestione utenti"
+    },
+    {
+      "name": "Album",
+      "description": "Gestione dell'album utenti"
+    },
+    {
+      "name": "Mercato",
+      "description": "Funzioni del mercato"
+    },
+    {
+      "name": "Scambi",
+      "description": "Sistema di scambi"
+    },
+    {
+      "name": "Preferiti",
+      "description": "Gestione dei preferiti"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": [
+          "Utenti"
+        ],
+        "summary": "Login utente",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login effettuato"
+          },
+          "400": {
+            "description": "Email o password mancante"
+          },
+          "401": {
+            "description": "Credenziali errate"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "tags": [
+          "Utenti"
+        ],
+        "summary": "Registra un nuovo utente",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "surname": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Utente registrato"
+          },
+          "400": {
+            "description": "Campi non validi"
+          },
+          "500": {
+            "description": "Errore server"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "put": {
+        "tags": [
+          "Profilo"
+        ],
+        "summary": "Aggiorna i dati del profilo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID dell'utente"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "surname": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Utente aggiornato"
+          },
+          "400": {
+            "description": "Richiesta non valida"
+          },
+          "404": {
+            "description": "Utente non trovato"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Profilo"
+        ],
+        "summary": "Elimina l'account utente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID dell'utente"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utente eliminato"
+          },
+          "404": {
+            "description": "Utente non trovato"
+          }
+        }
+      }
+    },
+    "/user/{id}/album": {
+      "post": {
+        "tags": [
+          "Album"
+        ],
+        "summary": "Aggiunge carte all'album con quantit\u00e0",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "carte": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Album aggiornato"
+          },
+          "400": {
+            "description": "Dati non validi"
+          },
+          "500": {
+            "description": "Errore server"
+          }
+        }
+      }
+    },
+    "/market": {
+      "post": {
+        "summary": "Metti carta in vendita",
+        "tags": [
+          "Mercato"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "venditoreId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "venditoreId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/acquista": {
+      "post": {
+        "summary": "Acquista carta",
+        "tags": [
+          "Mercato"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardId": {
+                    "type": "integer"
+                  },
+                  "acquirenteId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "cardId",
+                  "acquirenteId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scambi": {
+      "post": {
+        "summary": "Proponi uno scambio",
+        "tags": [
+          "Scambi"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proponenteId": {
+                    "type": "string"
+                  },
+                  "cartaOfferta": {
+                    "type": "integer"
+                  },
+                  "cartaRichiesta": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "proponenteId",
+                  "cartaOfferta",
+                  "cartaRichiesta"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{id}/fav": {
+      "post": {
+        "summary": "Aggiungi eroe ai preferiti",
+        "tags": [
+          "Preferiti"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "preferito": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "preferito"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/user/{id}/fumetto-preferito": {
+      "post": {
+        "summary": "Aggiungi fumetto ai preferiti",
+        "tags": [
+          "Preferiti"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fumettoId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "fumettoId"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/scambi/{id}/accetta": {
+      "post": {
+        "tags": [
+          "Scambi"
+        ],
+        "summary": "Accetta uno scambio esistente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID dello scambio"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scambio accettato"
+          },
+          "400": {
+            "description": "Richiesta non valida"
+          },
+          "404": {
+            "description": "Scambio o utente non trovato"
+          }
+        }
+      }
+    },
+    "/scambi/{id}/rifiuta": {
+      "post": {
+        "tags": [
+          "Scambi"
+        ],
+        "summary": "Rifiuta uno scambio",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID dello scambio"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scambio rifiutato"
+          },
+          "400": {
+            "description": "Richiesta non valida"
+          },
+          "404": {
+            "description": "Scambio non trovato"
+          }
+        }
+      }
+    },
+    "/user/{id}/add-autore": {
+      "post": {
+        "tags": [
+          "Preferiti"
+        ],
+        "summary": "Aggiungi un autore ai preferiti",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID dell'utente"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "autore": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "autore"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autore aggiunto ai preferiti"
+          },
+          "400": {
+            "description": "Richiesta non valida"
+          },
+          "404": {
+            "description": "Utente non trovato o autore gi\u00e0 presente"
+          }
+        }
+      }
+    }
+  }
+}

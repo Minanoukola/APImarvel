@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Fumetti Preferiti</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-danger">
+  <div class="container-fluid">
+    <a class="navbar-brand text-black fw-bold" href="home.html">CGC</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link text-black" href="home.html">Hero</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="comics.html">Fumetti</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="shop.html">Shop</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="mercato.html">Mercato</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="scambi.html">Scambi</a></li>
+      </ul>
+      <div id="login-btn" class="d-flex">
+        <a href="login.html" class="btn btn-dark me-2">Sign In</a>
+      </div>
+      <div id="user-info" class="d-none d-flex">
+        <a id="user-name" href="utente.html" class="btn btn-dark me-2"></a>
+        <a href="#" id="logout-btn" class="btn btn-outline-dark">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    
+    <nav class="col-md-3 col-lg-2 sidebar">
+      <h4 class="text-center">Account</h4>
+      <ul class="nav flex-column">
+        <hr />
+        <li class="nav-item"><a class="nav-link" href="album.html">Album</a></li>
+        <li class="nav-item"><a class="nav-link" href="preferiti.html">Carte Preferite</a></li>
+        <li class="nav-item"><a class="nav-link" href="preferiti_autori.html">Autori Preferiti</a></li>
+        <li class="nav-item"><a class="nav-link" href="preferiti_fumetti.html">Fumetti Preferiti</a></li>
+        <hr />
+        <li class="nav-item"><a class="nav-link" href="utente.html">Modifica Profilo</a></li>
+      </ul>
+      <button class="btn btn-back w-100 mt-3" onClick="history.go(-1);">Torna indietro</button>
+    </nav>
+
+    <main class="col-md-9 col-lg-10 content">
+      <h2 class="mb-4">Fumetti Preferiti</h2>
+      <div id="fumettiContainer" class="row row-cols-2 row-cols-md-4 g-4">
+        
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const userId = localStorage.getItem('id_utente');
+
+if (userId) {
+  fetch(`http://localhost:3002/user/${userId}`)
+    .then(res => res.json())
+    .then(user => {
+      if (!user || !user.email) return;
+
+      const iniziale = user.email.charAt(0).toUpperCase();
+      const badge = document.createElement('div');
+      badge.textContent = iniziale;
+      badge.classList.add('rounded-circle', 'bg-dark', 'text-white', 'd-flex', 'justify-content-center', 'align-items-center');
+      badge.style.width = '40px';
+      badge.style.height = '40px';
+      badge.style.fontWeight = 'bold';
+      badge.style.fontSize = '20px';
+      badge.style.cursor = 'pointer';
+      badge.title = user.email;
+
+      const userNameElem = document.getElementById("user-name");
+      userNameElem.innerHTML = '';
+      userNameElem.appendChild(badge);
+      userNameElem.href = "utente.html";
+
+      document.getElementById("login-btn").classList.add("d-none");
+      document.getElementById("user-info").classList.remove("d-none");
+    })
+    .catch(err => {
+      console.error("Errore nel recupero utente:", err);
+    });
+}
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.clear();
+  window.location.href = "login.html";
+});
+
+async function caricaFumettiPreferiti() {
+  try {
+    const res = await fetch(`http://localhost:3002/user/${userId}`);
+    const user = await res.json();
+    const fumetti = user.fumetti_prefer || [];
+
+    const container = document.getElementById("fumettiContainer");
+    container.innerHTML = "";
+
+    if (fumetti.length === 0) {
+      container.innerHTML = "<p>Nessun fumetto preferito trovato.</p>";
+      return;
+    }
+
+    for (const id of fumetti) {
+  const comicData = await getComicDetails(id);
+  if (comicData) {
+    const col = document.createElement("div");
+    col.className = "col";
+
+    const card = document.createElement("div");
+    card.className = "card p-3 text-center";
+    card.style.cursor = "pointer";
+    card.onclick = () => {
+      window.location.href = `comicDetails.html?id=${comicData.id}`;
+    };
+
+    const img = document.createElement("img");
+    img.src = `${comicData.thumbnail.path}/portrait_uncanny.${comicData.thumbnail.extension}`;
+    img.alt = comicData.title;
+    img.className = "card-img-top";
+
+    const title = document.createElement("div");
+    title.className = "card-title";
+    title.textContent = comicData.title;
+
+    card.appendChild(img);
+    card.appendChild(title);
+    col.appendChild(card);
+    container.appendChild(col);
+  }
+}
+  } catch (err) {
+    console.error("Errore nel recupero fumetti preferiti:", err);
+    alert("Errore durante il caricamento.");
+  }
+}
+
+async function getComicDetails(comicId) {
+  const ts = Date.now();
+  const publicKey = '1ef844cb824d486f8aca3ebeb47cf0ce';
+const privateKey = 'a1a5a597f5b58806ef5d614dd7e0e2573769aca0';
+const hash = SparkMD5.hash(ts + privateKey + publicKey);
+const url = `https://gateway.marvel.com/v1/public/comics/${comicId}?ts=${ts}&apikey=${publicKey}&hash=${hash}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.data.results[0];
+}
+
+caricaFumettiPreferiti();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

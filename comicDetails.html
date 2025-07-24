@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dettagli Fumetto</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+   
+body {
+background-color: #f4f4f4;
+padding-top: 100px; 
+}
+
+
+.navbar {
+background-color: #e60000 !important;
+position: fixed;
+top: 0;
+width: 100%;
+z-index: 1030;
+}
+.navbar .nav-link,
+.navbar .navbar-brand {
+color: black !important;
+font-weight: bold;
+}
+
+
+.card {
+position: relative;
+border: none;
+overflow: hidden;
+height: 100%;
+background-color: white;
+transition: transform 0.4s ease, background-color 0.3s ease;
+}
+.card:hover {
+transform: scale(1.06);
+background-color: #e60000;
+color: white;
+}
+.card:hover .card-title,
+.card:hover .card-text {
+color: white;
+}
+
+
+.card-img-top {
+width: 100%;
+height: 260px;
+object-fit: cover;
+}
+
+
+.card-body {
+padding: 10px;
+min-height: 70px;
+}
+
+
+.btn-primary {
+background-color: #e60000;
+border: none;
+}
+.btn-primary:hover {
+background-color: #cc0000;
+}
+
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+background-color: rgba(0, 0, 0, 0.5);
+border-radius: 50%;
+}
+.carousel-control-prev,
+.carousel-control-next {
+display: flex !important;
+}
+
+
+.rarity-badge {
+position: absolute;
+top: 10px;
+left: 10px;
+padding: 5px 10px;
+font-size: 12px;
+font-weight: bold;
+color: white;
+border-radius: 5px;
+text-transform: uppercase;
+z-index: 10;
+}
+.epic-badge { background-color: gold; color: black; }
+.rare-badge { background-color: blue; color: white; }
+.base-badge { background-color: gray; color: white; }
+
+    
+.carousel .card {
+max-width: 180px; 
+margin: auto;
+height: auto;
+min-height: unset;
+transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.carousel .card:hover {
+transform: scale(1.08);
+background-color: #e60000;
+color: white;
+}
+
+
+.carousel .card-img-top {
+height: 150px;
+object-fit: cover;
+}
+
+
+.carousel .card-title {
+font-size: 0.85rem;
+margin-top: 5px;
+}
+.card:hover .btn {
+background-color: black !important;
+color: white !important;
+border: none;
+}
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <button class="btn btn-primary" onclick="history.back()">Torna indietro</button>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="card shadow">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img id="image" class="img-fluid rounded-start" alt="Copertina fumetto">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h3 id="c_name" class="card-title mb-3"></h3>
+            <p id="description" class="card-text text-muted"></p>
+            <p id="vote_average" class="card-text"></p>
+            <p id="release" class="card-text"><small class="text-body-secondary">Ultimo aggiornamento</small></p>
+            <button id="btn_fav" onclick="aggiungi_preferiti()" class="btn btn-primary mt-3">Aggiungi ai preferiti</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="container my-5">
+    <h4 class="text-center">Personaggi</h4>
+    <div id="charactersCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner" id="charactersInner"></div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#charactersCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#charactersCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+    </div>
+  </div>
+
+  
+  <div class="container my-5">
+    <h4 class="text-center">Autori</h4>
+    <div id="creatorsCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner" id="creatorsInner"></div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#creatorsCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#creatorsCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+    </div>
+  </div>
+
+  <template id="card-character">
+    <div class="col-6 col-md-2">
+      <div class="card h-100">
+        <img src="" class="card-img-top" alt="immagine">
+        <div class="card-body p-2">
+          <h6 class="card-title text-center name m-0"></h6>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const api_key = '1ef844cb824d486f8aca3ebeb47cf0ce';
+const private_key = 'a1a5a597f5b58806ef5d614dd7e0e2573769aca0';
+
+    function generateMD5Hash(data) {
+      return SparkMD5.hash(data);
+    }
+
+    async function getComicDetail(comicId) {
+      const ts = Date.now();
+      const hash = generateMD5Hash(`${ts}${private_key}${api_key}`);
+      const url = `https://gateway.marvel.com/v1/public/comics/${comicId}?ts=${ts}&apikey=${api_key}&hash=${hash}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.data.results[0];
+    }
+
+    function mostraDetail(comic) {
+      document.getElementById('c_name').textContent = comic.title || "Titolo non disponibile";
+      document.getElementById('description').textContent = comic.description || "Nessuna descrizione disponibile";
+      document.getElementById('image').src = `${comic.thumbnail.path}.${comic.thumbnail.extension}`;
+      document.getElementById('vote_average').textContent = `Numero di pagine: ${comic.pageCount || "N/D"}`;
+      document.getElementById('release').textContent = `Ultima modifica: ${new Date(comic.modified).toLocaleDateString()}`;
+    }
+
+    function generaCarosello(items, containerId, tipo = 'character') {
+      const container = document.getElementById(containerId);
+      const template = document.getElementById('card-character');
+      container.innerHTML = '';
+      let active = true;
+
+      for (let i = 0; i < items.length; i += 4) {
+        const slide = document.createElement("div");
+        slide.className = `carousel-item ${active ? "active" : ""}`;
+        active = false;
+
+        const row = document.createElement("div");
+        row.className = "row justify-content-center";
+
+        items.slice(i, i + 4).forEach(item => {
+          const clone = template.content.cloneNode(true);
+          const name = tipo === 'creator' ? `${item.name} (${item.role})` : item.name;
+          const img = clone.querySelector('img');
+          const card = clone.querySelector('.card');
+
+          clone.querySelector('.name').textContent = name;
+          img.src = tipo === 'creator'
+            ? 'https://cdn-icons-png.flaticon.com/512/147/147144.png'
+            : `${item.thumbnail?.path}/portrait_xlarge.${item.thumbnail?.extension}`;
+          
+          card.onclick = () => {
+            if (tipo === 'creator') {
+              window.location.href = `autori.html?id=${item.id}`;
+            } else {
+              window.location.href = `card.html?type=character&id=${item.id}`;
+            }
+          };
+
+          row.appendChild(clone);
+        });
+
+        slide.appendChild(row);
+        container.appendChild(slide);
+      }
+    }
+
+    async function aggiungi_preferiti() {
+  const comicId = new URLSearchParams(window.location.search).get("id");
+  const userId = localStorage.getItem("id_utente");
+  if (!userId) return alert("Devi essere loggato per aggiungere ai preferiti.");
+
+  try {
+    const response = await fetch(`http://localhost:3002/user/${userId}/fumetto-preferito`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fumettoId: comicId })
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      alert(result.message || "Aggiunto ai preferiti!");
+    } else {
+      alert(result.error || "Errore durante l'aggiunta.");
+    }
+  } catch (err) {
+    console.error("Errore:", err);
+    alert("Errore server durante l'aggiunta ai preferiti.");
+  }
+}
+
+    (async () => {
+      const comicId = new URLSearchParams(window.location.search).get("id");
+      if (!comicId) return;
+
+      const comic = await getComicDetail(comicId);
+      if (comic) mostraDetail(comic);
+
+      
+      const ts = Date.now();
+      const hash = generateMD5Hash(`${ts}${private_key}${api_key}`);
+      const url = `https://gateway.marvel.com/v1/public/comics/${comicId}/characters?ts=${ts}&apikey=${api_key}&hash=${hash}&limit=20`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const characters = data.data.results;
+      generaCarosello(characters, "charactersInner", 'character');
+
+      // Autori direttamente da comic.creators.items
+      const creators = comic.creators.items.map(c => ({
+        id: c.resourceURI.split("/").pop(),
+        name: c.name,
+        role: c.role
+      }));
+      generaCarosello(creators, "creatorsInner", 'creator');
+    })();
+  </script>
+</body>
+</html>

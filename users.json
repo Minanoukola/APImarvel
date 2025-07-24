@@ -1,0 +1,30 @@
+[
+    {
+        "id_utente": "0",
+        "name": "mina",
+        "surname": "noukola",
+        "password": "password",
+        "email": "minanoukola@gmail.com",
+        "film_preferiti": [
+            1,
+            3
+        ]
+    },
+    {
+        "name": "Valerio",
+        "surname": "Bellandi",
+        "password": "password",
+        "email": "mina@gmail.com",
+        "film_preferiti": [
+            1,
+            3
+        ]
+    },
+    {
+        "name": "Antongiacomo",
+        "surname": "Polimeno",
+        "password": "password",
+        "email": "antongiacomo.polimeno@unimi.it",
+        "film_preferiti": []
+    }
+]

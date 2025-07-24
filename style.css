@@ -1,0 +1,149 @@
+body {
+    background-color: #f4f4f4;
+    padding-top: 150px; /* spazio sotto la navbar */
+}
+
+/* Navbar */
+.navbar {
+    background-color: #e60000 !important;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+}
+.nav-link,
+.navbar-brand {
+    color: black !important;
+    font-weight: bold;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100vh;
+    background-color: #b71c1c;
+    padding: 15px;
+    border-right: 3px solid #900;
+    color: white;
+}
+.sidebar a {
+    color: white !important;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-weight: normal !important;
+}
+.sidebar .nav-item .nav-link {
+    color: white !important;
+}
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.sidebar hr {
+    border-top: 1px solid white;
+}
+
+/* Contenuto principale */
+.content {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Pulsante Indietro */
+.btn-back {
+    background-color: white;
+    color: #b71c1c;
+    border: 2px solid white;
+}
+.btn-back:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #900;
+}
+
+/* Badge rarità */
+.rarity-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    text-transform: uppercase;
+    z-index: 10;
+}
+.epic-badge {
+    background-color: gold;
+    color: black;
+}
+.rare-badge {
+    background-color: blue;
+    color: white;
+}
+.base-badge {
+    background-color: gray;
+    color: white;
+}
+.dynamic-card {
+    position: relative;
+}
+
+/* Container figurine */
+.container-cards {
+    padding: 20 20px;
+}
+
+/* Card figurine / shop */
+.card {
+    height: 430px; /* o qualsiasi altezza tu voglia usare per uniformare */
+    min-height: 430px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+    padding: 10px;
+  }
+.card:hover {
+    transform: scale(1.05);
+    background-color: #e60000;
+    color: white;
+}
+.card:hover .card-title,
+.card:hover .card-text {
+    color: white;
+}
+.card-img-top {
+    height: 180px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain; /* mantiene le proporzioni senza tagliare */
+    margin: 0 auto;
+  }
+
+/* Pulsanti principali */
+.btn-primary {
+    background-color: #e60000;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #cc0000;
+}
+.card-name {
+    min-height: 2.5em;
+    font-weight: bold;
+  }
+  
+  .card-text {
+    min-height: 4.8em;
+    max-height: 4.8em;
+    line-height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }

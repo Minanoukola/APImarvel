@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop - Album Figurine Super Eroi</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    
+  </style>
+</head>
+<body>
+
+
+<nav class="navbar navbar-expand-lg  fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand text-black fw-bold" href="home.html">CGC</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link text-black" href="home.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="album.html">Album</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="shop.html">Shop</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="mercato.html">Mercato</a></li>
+        <li class="nav-item"><a class="nav-link text-black" href="scambi.html">Scambi</a></li>
+      </ul>
+      <div id="login-btn" class="d-flex">
+        <a href="login.html" class="btn btn-dark me-2">Sign In</a>
+      </div>
+      <div id="user-info" class="d-none d-flex">
+        <a id="user-name" href="utente.html" class="btn btn-dark me-2"></a>
+        <a href="#" id="logout-btn" class="btn btn-outline-dark">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Negozio di Figurine</h2>
+  <div class="text-end mb-3">
+    <span id="crediti" class="fw-bold text-danger">Crediti: ...</span>
+  </div>
+
+
+  <div class="row row-cols-3 row-cols-md-3 g-10 mb-4">
+    <div class="col">
+      <div class="card text-center shadow p-2 h-100 d-flex flex-column justify-content-between">
+        <img src="pack5.png" alt="Pacchetto Base" class="img-fluid mx-auto d-block" style="max-height: 500px;">
+        <div class="mt-3">
+          <button onclick="acquistaPacchetto(1)" class="btn btn-primary w-10">
+            <span class="material-symbols-outlined">add_shopping_cart</span> 1 credito
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center shadow p-2 h-100 d-flex flex-column justify-content-between">
+        <img src="pack9.png" alt="Pacchetto Base" class="img-fluid mx-auto d-block" style="max-height: 500px;">
+        <div class="mt-3">
+          <button onclick="acquistaPacchetto(1.5)" class="btn btn-primary w-10">
+            <span class="material-symbols-outlined">add_shopping_cart</span> 1.5 credito
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="risultato-pacchetto" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4"></div>
+
+  
+  <div class="card shadow mt-5">
+    <div class="card-body">
+      <h5 class="card-title">Acquista Crediti</h5>
+      <p class="card-text">Inserisci i dati per simulare un acquisto.</p>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <input type="text" id="nomeCarta" class="form-control" placeholder="Nome sulla carta">
+        </div>
+        <div class="col-md-6">
+          <input type="text" id="numeroCarta" class="form-control" placeholder="Numero carta">
+        </div>
+        <div class="col-md-4">
+          <input type="text" id="scadenzaCarta" class="form-control" placeholder="MM/AA">
+        </div>
+        <div class="col-md-4">
+          <input type="text" id="cvvCarta" class="form-control" placeholder="CVV">
+        </div>
+        <div class="col-md-4">
+          <input type="number" id="creditiDaAggiungere" class="form-control" placeholder="Crediti da acquistare">
+        </div>
+        <div class="col-12 text-end mt-2">
+          <button onclick="acquistaCrediti()" class="btn btn-success">Conferma Acquisto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+const api_key = '1ef844cb824d486f8aca3ebeb47cf0ce';
+const private_key = 'a1a5a597f5b58806ef5d614dd7e0e2573769aca0';
+let creditiUtente = 0;
+const userId = localStorage.getItem("id_utente");
+
+if (!userId) window.location.href = "login.html";
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.clear();
+  window.location.href = "home.html";
+});
+
+async function aggiornaNavbarUtente() {
+  try {
+    const res = await fetch(`http://localhost:3002/user/${userId}`);
+    const user = await res.json();
+    const email = user.email || 'U';
+    const iniziale = email.charAt(0).toUpperCase();
+
+    const badge = document.createElement("div");
+    badge.textContent = iniziale;
+    badge.classList.add("rounded-circle", "bg-dark", "text-white", "d-flex", "justify-content-center", "align-items-center");
+    
+    badge.title = email;
+
+    const userNameElem = document.getElementById("user-name");
+    userNameElem.innerHTML = "";
+    userNameElem.appendChild(badge);
+
+    document.getElementById("login-btn").classList.add("d-none");
+    document.getElementById("user-info").classList.remove("d-none");
+  } catch (e) {
+    console.error("Errore caricamento utente:", e);
+  }
+}
+
+function generateMD5Hash(input) {
+  return CryptoJS.MD5(input).toString();
+}
+
+async function caricaCrediti() {
+  try {
+    const res = await fetch(`http://localhost:3002/user/${userId}`);
+    const user = await res.json();
+    creditiUtente = user.crediti || 0;
+    document.getElementById("crediti").textContent = `Crediti: ${creditiUtente}`;
+  } catch (err) {
+    console.error("Errore caricamento crediti:", err);
+  }
+}
+
+async function acquistaCrediti() {
+  const extra = parseInt(document.getElementById("creditiDaAggiungere").value);
+  if (!extra || extra <= 0) return alert("Numero crediti non valido");
+
+  try {
+    const res = await fetch(`http://localhost:3002/user/${userId}/crediti`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ creditiDaAggiungere: extra })
+    });
+    const data = await res.json();
+    creditiUtente = data.crediti;
+    document.getElementById("crediti").textContent = `Crediti: ${creditiUtente}`;
+    alert("Acquisto completato!");
+  } catch (err) {
+    alert("Errore durante l'acquisto crediti");
+    console.error(err);
+  }
+
+  // Reset campi
+  ["nomeCarta", "numeroCarta", "scadenzaCarta", "cvvCarta", "creditiDaAggiungere"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+}
+
+async function acquistaPacchetto(costo) {
+  if (creditiUtente < costo) {
+    alert("Crediti insufficienti!");
+    return;
+  }
+
+  const timestamp = Date.now();
+  const hash = generateMD5Hash(`${timestamp}${private_key}${api_key}`);
+  const res = await fetch(`https://gateway.marvel.com/v1/public/characters?ts=${timestamp}&apikey=${api_key}&hash=${hash}&limit=100&offset=${Math.floor(Math.random()*1000)}`);
+  const data = await res.json();
+  const risultati = data.data.results;
+
+  const n = costo >= 1.5 ? 9 : 5;
+  const pacchetto = [];
+  for (let i = 0; i < n; i++) {
+    const hero = risultati[Math.floor(Math.random() * risultati.length)];
+    pacchetto.push({
+      id: hero.id,
+      nome: hero.name,
+      img: hero.thumbnail.path + "." + hero.thumbnail.extension,
+      comics: hero.comics.available,
+      rarita: hero.comics.available <= 20 ? "Epico" : (hero.comics.available < 60 ? "Raro" : "Base")
+    });
+  }
+
+  mostraPacchetto(pacchetto);
+  await salvaCarte(pacchetto, costo);
+}
+
+function mostraPacchetto(pacchetto) {
+  const div = document.getElementById("risultato-pacchetto");
+  div.innerHTML = "<h4 class='col-12 text-center'>Hai trovato:</h4>";
+  pacchetto.forEach(card => {
+    div.innerHTML += `
+      <div class="col">
+        <div class="card h-100 text-center shadow">
+          <img src="${card.img}" class="card-img-top" alt="${card.nome}" style="border-radius: 8px;">
+          <div class="card-body">
+            <h5>${card.nome}</h5>
+            <p>Fumetti: ${card.comics}</p>
+            <strong>${card.rarita}</strong>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+async function salvaCarte(pacchetto, costo) {
+  const ids = pacchetto.map(c => c.id);
+  try {
+    await fetch(`http://localhost:3002/user/${userId}/album`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ carte: ids })
+    });
+
+    await fetch(`http://localhost:3002/user/${userId}/crediti`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ creditiDaAggiungere: -costo })
+    });
+
+    creditiUtente -= costo;
+    document.getElementById("crediti").textContent = `Crediti: ${creditiUtente}`;
+  } catch (err) {
+    console.error("Errore salvataggio carte:", err);
+  }
+}
+
+window.onload = () => {
+  caricaCrediti();
+  aggiornaNavbarUtente();
+};
+</script>
+</body>
+</html>

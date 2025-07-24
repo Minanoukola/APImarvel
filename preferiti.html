@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carte Preferite</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-danger">
+        <div class="container-fluid">
+          <a class="navbar-brand text-black fw-bold" href="home.html">CGC</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item"><a class="nav-link text-black" href="home.html">home</a></li>
+              <li class="nav-item"><a class="nav-link text-black" href="album.html">album</a></li>
+              <li class="nav-item"><a class="nav-link text-black" href="shop.html">Shop</a></li>
+              <li class="nav-item"><a class="nav-link text-black" href="mercato.html">Mercato</a></li>
+              <li class="nav-item"><a class="nav-link text-black" href="scambi.html">Scambi</a></li>
+            </ul>
+            <div id="login-btn" class="d-flex">
+              <a href="login.html" class="btn btn-dark me-2">Sign In</a>
+            </div>
+            <div id="user-info" class="d-none d-flex">
+              <a id="user-name" href="utente.html" class="btn btn-dark me-2"></a>
+              <a href="#" id="logout-btn" class="btn btn-outline-dark">Logout</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+  <div class="container-fluid">
+    <div class="row">
+      
+      <nav class="col-md-3 col-lg-2 sidebar">
+        <h4 class="text-center">Account</h4>
+        <ul class="nav flex-column">
+            
+            <hr />
+            <li class="nav-item"><a class="nav-link" href="album.html">Album</a></li>
+            <li class="nav-item"><a class="nav-link" href="preferiti.html">Carte Preferite</a></li>
+            <li class="nav-item"><a class="nav-link" href="preferiti_autori.html">Autori Preferiti</a></li>
+            <li class="nav-item"><a class="nav-link" href="preferiti_fumetti.html">Fumetti Preferiti</a></li>
+            <hr />
+            <li class="nav-item"><a class="nav-link" href="utente.html">Modifica Profilo</a></li>
+            
+        </ul>
+        <button class="btn btn-back w-100 mt-3" onClick="history.go(-1);">Torna indietro</button>
+    </nav>
+
+      
+      <main class="col-md-9 col-lg-10 content">
+        <h1>Carte Preferite</h1>
+
+        <div id="loading" class="text-center my-4">
+          <div class="spinner-border text-danger" role="status"></div>
+          <p>Caricamento preferiti...</p>
+        </div>
+
+        <div class="container">
+          <div id="container" class="row row-cols-md-4 row-cols-sm-2 row-cols-2 g-4">
+           
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+  <script>
+
+    const userId = localStorage.getItem("id_utente");
+    const api_key = '1ef844cb824d486f8aca3ebeb47cf0ce';
+const private_key = 'a1a5a597f5b58806ef5d614dd7e0e2573769aca0';
+
+    document.addEventListener("DOMContentLoaded", async () => {
+  const userId = localStorage.getItem("id_utente");
+
+  if (userId) {
+    try {
+      const res = await fetch(`http://localhost:3002/user/${userId}`);
+      if (!res.ok) throw new Error("Utente non trovato");
+
+      const user = await res.json();
+      const email = user.email || "U";
+
+      const iniziale = email.charAt(0).toUpperCase();
+      const badge = document.createElement("div");
+      badge.textContent = iniziale;
+      badge.classList.add("rounded-circle", "bg-dark", "text-white", "d-flex", "justify-content-center", "align-items-center");
+      badge.style.width = "40px";
+      badge.style.height = "40px";
+      badge.style.fontWeight = "bold";
+      badge.style.fontSize = "20px";
+      badge.style.cursor = "pointer";
+      badge.title = email;
+
+      const userNameElem = document.getElementById("user-name");
+      userNameElem.innerHTML = "";
+      userNameElem.appendChild(badge);
+      userNameElem.href = "utente.html";
+
+      document.getElementById("login-btn").classList.add("d-none");
+      document.getElementById("user-info").classList.remove("d-none");
+
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "home.html";
+      });
+
+    } catch (err) {
+      console.error("Errore nel recupero utente:", err);
+    }
+  }
+});
+
+    function generateMD5Hash(data) {
+      return SparkMD5.hash(data);
+    }
+
+    async function getCharacterDetails(id) {
+      const ts = Date.now();
+      const hash = generateMD5Hash(`${ts}${private_key}${api_key}`);
+      const url = `https://gateway.marvel.com/v1/public/characters/${id}?ts=${ts}&apikey=${api_key}&hash=${hash}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.data.results[0];
+      } catch (err) {
+        console.error("Errore nel recupero del personaggio:", err);
+        return null;
+      }
+    }
+
+    async function fetchPreferiti() {
+      try {
+        const res = await fetch(`http://localhost:3002/user/${userId}`);
+        if (!res.ok) throw new Error("Errore nel recupero dati utente");
+        const user = await res.json();
+
+        const preferiti = user.hero_prefer || [];
+
+        const promises = preferiti.map(id => getCharacterDetails(id));
+        const results = await Promise.all(promises);
+
+        results.forEach(character => {
+          if (character) renderCard(character);
+        });
+
+      } catch (err) {
+        console.error("Errore nel caricamento preferiti:", err);
+        alert("Errore nel caricamento delle carte preferite.");
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    function renderCard(character) {
+      const col = document.createElement("div");
+      col.className = "col";
+
+      col.innerHTML = `
+        <div class="card h-100">
+          <img src="${character.thumbnail.path}.${character.thumbnail.extension}" class="card-img-top" alt="${character.name}">
+          <div class="card-body">
+            <h5 class="card-title">${character.name}</h5>
+            <p class="card-text">${character.description || "Nessuna descrizione disponibile."}</p>
+          </div>
+          <div class="card-footer text-center">
+            <a href="card.html?type=character&id=${character.id}" class="btn btn-primary">Dettagli</a>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("container").appendChild(col);
+    }
+
+    fetchPreferiti();
+  </script>
+</body>
+</html>

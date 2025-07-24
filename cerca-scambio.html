@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerca Carta per Scambio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f4f4; padding: 20px; }
+    .card-img-top { height: 200px; object-fit: cover; }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">Cerca Carta per Scambio</h1>
+
+    <div class="input-group mb-4">
+      <input type="text" id="nomeCarta" class="form-control" placeholder="Inserisci nome carta">
+      <button class="btn btn-primary" onclick="cercaCarta()">Cerca</button>
+    </div>
+
+    <div id="risultati" class="row row-cols-md-4 g-4"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+  <script>
+    const api_key = '1ef844cb824d486f8aca3ebeb47cf0ce';
+const private_key = 'a1a5a597f5b58806ef5d614dd7e0e2573769aca0';
+    const proponenteId = localStorage.getItem("id_utente");
+    const cartaOfferta = localStorage.getItem("cartaOfferta");
+
+    function generateMD5Hash(data) {
+      return SparkMD5.hash(data);
+    }
+
+    async function cercaCarta() {
+      const nome = document.getElementById("nomeCarta").value;
+      if (!nome) return alert("Inserisci un nome!");
+
+      const timestamp = Date.now();
+      const hash = generateMD5Hash(`${timestamp}${private_key}${api_key}`);
+      const url = `https://gateway.marvel.com/v1/public/characters?nameStartsWith=${nome}&ts=${timestamp}&apikey=${api_key}&hash=${hash}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        mostraRisultati(data.data.results);
+      } catch (err) {
+        console.error("Errore Marvel API:", err);
+        alert("Errore durante la ricerca.");
+      }
+    }
+
+    function mostraRisultati(carte) {
+      const container = document.getElementById("risultati");
+      container.innerHTML = "";
+
+      if (carte.length === 0) {
+        container.innerHTML = "<p>Nessuna carta trovata.</p>";
+        return;
+      }
+
+      carte.forEach(carta => {
+        const col = document.createElement("div");
+        col.className = "col";
+
+        col.innerHTML = `
+          <div class="card">
+            <img src="${carta.thumbnail.path}.${carta.thumbnail.extension}" class="card-img-top" alt="${carta.name}">
+            <div class="card-body">
+              <h5 class="card-title">${carta.name}</h5>
+              <p>${carta.description || "Nessuna descrizione disponibile"}</p>
+              <button class="btn btn-success w-100" onclick="proponiScambioFinale(${carta.id})">Proponi Scambio con questa</button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(col);
+      });
+    }
+
+    async function proponiScambioFinale(cartaRichiesta) {
+  try {
+    const res = await fetch("http://localhost:3002/scambi", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proponenteId,
+        cartaOfferta,
+        cartaRichiesta
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message || "Scambio proposto con successo!");
+      window.location.href = "scambi.html";
+    } else {
+      alert(data.error || "Errore durante la proposta di scambio.");
+    }
+  } catch (err) {
+    console.error("Errore proposta scambio:", err);
+    alert("Errore durante la proposta di scambio.");
+  }
+}
+  </script>
+</body>
+</html>
